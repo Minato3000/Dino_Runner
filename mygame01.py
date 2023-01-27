@@ -165,7 +165,7 @@ class Bird(Obstacle):
     def draw(self, SCREEN):
         if self.index >= 9:
             self.index = 0
-        SCREEN.blit(self.image[self.index//5], self.rect)
+        SCREEN.blit(self.image[self.index // 5], self.rect)
         self.index += 1
 
 
@@ -175,12 +175,13 @@ def main():
     clock = pygame.time.Clock()
     player = Dinosaur()
     cloud = Cloud()
-    game_speed = 14
+    game_speed = 20
     x_pos_bg = 0
     y_pos_bg = 380
     points = 0
     font = pygame.font.Font('freesansbold.ttf', 20)
     obstacles = []
+    death_count = 0
 
     def score():
         global points, game_speed
@@ -227,7 +228,9 @@ def main():
             obstacle.draw(SCREEN)
             obstacle.update()
             if player.dino_rect.colliderect(obstacle.rect):
-                pygame.draw.rect(SCREEN, (255, 0, 0), player.dino_rect, 2)
+                pygame.time.delay(1000)
+                death_count += 1
+                menu(death_count)
 
         background()
 
@@ -240,4 +243,32 @@ def main():
         pygame.display.update()
 
 
-main()
+def menu(death_count):
+    global points
+    run = True
+    while run:
+        SCREEN.fill((255, 255, 255))
+        font = pygame.font.Font('freesansbold.ttf', 30)
+
+        if death_count == 0:
+            text = font.render("Press SPACE to start", True, (0, 0, 0))
+        elif death_count > 0:
+            score = font.render("Your score: " + str(points), True, (0, 0, 0))
+            text = font.render("Press SPACE to restart", True, (0, 0, 0))
+            scoreRect = score.get_rect()
+            scoreRect.center = (WIDTH // 2, HEIGHT // 2)
+            SCREEN.blit(score, scoreRect)
+        textRect = text.get_rect()
+        textRect.center = (WIDTH // 2, HEIGHT // 2 + 50)
+        SCREEN.blit(text, textRect)
+        SCREEN.blit(RUNNING[0], (WIDTH // 2 - 20, HEIGHT // 2 - 140))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+        user_input = pygame.key.get_pressed()
+        if user_input[pygame.K_SPACE]:
+            main()
+
+
+menu(death_count=0)
