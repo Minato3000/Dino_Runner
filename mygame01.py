@@ -126,7 +126,7 @@ class Cloud:
 
 
 class Obstacle:
-    def __int__(self, image, type):
+    def __init__(self, image, type):
         self.image = image
         self.type = type
         self.rect = self.image[self.type].get_rect()
@@ -158,7 +158,7 @@ class LargeCactus(Obstacle):
 class Bird(Obstacle):
     def __init__(self, image):
         self.type = 0
-        super.__init__(image, self.type)
+        super().__init__(image, self.type)
         self.rect.y = 250
         self.index = 0
 
