@@ -35,7 +35,6 @@ CLOUD = pygame.image.load(os.path.join("Assets/Other", "Cloud.png"))
 BG = pygame.image.load(os.path.join("Assets/Other", "Track.png"))
 
 
-# Dinosaur class
 class Dinosaur:
     X_POS = 80
     Y_POS = 310
@@ -58,7 +57,7 @@ class Dinosaur:
         self.dino_rect.x = self.X_POS
         self.dino_rect.y = self.Y_POS
 
-    def update( self, user_input):
+    def update(self, user_input):
         if self.dino_run:
             self.run()
         if self.dino_duck:
@@ -118,15 +117,60 @@ class Cloud:
 
     def update(self):
         self.x -= game_speed
-        if  self.x < -self.width:
+        if self.x < -self.width:
             self.x = WIDTH + random.randint(2500, 3000)
             self.y = random.randint(50, 100)
 
     def draw(self, screen):
         screen.blit(self.image, (self.x, self.y))
 
+
+class Obstacle:
+    def __int__(self, image, type):
+        self.image = image
+        self.type = type
+        self.rect = self.image[self.type].get_rect()
+        self.rect.x = WIDTH
+
+    def update(self):
+        self.rect.x -= game_speed
+        if self.rect.x < -self.rect.width:
+            obstacles.pop()
+
+    def draw(self, screen):
+        screen.blit(self.image[self.type], self.rect)
+
+
+class SmallCactus(Obstacle):
+    def __init__(self, image):
+        self.type = random.randint(0, 2)
+        super().__init__(image, self.type)
+        self.rect.y = 325
+
+
+class LargeCactus(Obstacle):
+    def __init__(self, image):
+        self.type = random.randint(0, 2)
+        super().__init__(image, self.type)
+        self.rect.y = 300
+
+
+class Bird(Obstacle):
+    def __init__(self, image):
+        self.type = 0
+        super.__init__(image, self.type)
+        self.rect.y = 250
+        self.index = 0
+
+    def draw(self, screen):
+        if self.index >= 9:
+            self.index = 0
+        screen.blit(self.image[self.index//5], self.rect)
+        self.index += 1
+
+
 def main():
-    global game_speed, x_pos_bg, y_pos_bg, points
+    global game_speed, x_pos_bg, y_pos_bg, points, obstacles
     run = True
     clock = pygame.time.Clock()
     player = Dinosaur()
@@ -136,6 +180,7 @@ def main():
     y_pos_bg = 380
     points = 0
     font = pygame.font.Font('freesansbold.ttf', 20)
+    obstacles = []
 
     def score():
         global points, game_speed
@@ -170,6 +215,20 @@ def main():
         player.draw(screen)
         player.update(user_input)
 
+        if len(obstacles) == 0:
+            if random.randint(0, 2) == 0:
+                obstacles.append(SmallCactus(small_cactus))
+            elif random.randint(0, 2) == 1:
+                obstacles.append(LargeCactus(large_cactus))
+            elif random.randint(0, 2) == 2:
+                obstacles.append(Bird(bird))
+
+        for obstacle in obstacles:
+            obstacle.draw(screen)
+            obstacle.update()
+            if player.dino_rect.colliderect(obstacle.rect):
+                pygame.draw.rect(screen, (255, 0, 0), player.dino_rect, 2)
+
         background()
 
         cloud.draw(screen)
@@ -179,5 +238,6 @@ def main():
 
         clock.tick(30)
         pygame.display.update()
+
 
 main()
